@@ -1,0 +1,344 @@
+<title>Prompt Registry — Console</title>
+<style>
+  :root {
+    --background: 0 0% 100%; --foreground: 240 10% 3.9%; --card: 0 0% 100%; --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%; --popover-foreground: 240 10% 3.9%; --primary: 240 5.9% 10%; --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%; --secondary-foreground: 240 5.9% 10%; --muted: 240 4.8% 95.9%; --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%; --accent-foreground: 240 5.9% 10%; --destructive: 0 72% 51%; --destructive-foreground: 0 0% 98%;
+    --success: 142 71% 40%; --warning: 35 92% 45%; --border: 240 5.9% 90%; --input: 240 5.9% 90%; --ring: 240 10% 3.9%;
+    --radius: 0.625rem;
+    --brand: #0E9488; --brand-soft: rgba(14,148,136,0.12);
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 1px 3px 0 rgb(0 0 0 / 0.06), 0 4px 14px -2px rgb(0 0 0 / 0.05);
+    --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --background: 240 10% 3.9%; --foreground: 0 0% 98%; --card: 240 6% 10%; --card-foreground: 0 0% 98%;
+      --popover: 240 6% 10%; --popover-foreground: 0 0% 98%; --primary: 0 0% 98%; --primary-foreground: 240 5.9% 10%;
+      --secondary: 240 3.7% 15.9%; --secondary-foreground: 0 0% 98%; --muted: 240 3.7% 15.9%; --muted-foreground: 240 5% 64.9%;
+      --accent: 240 3.7% 15.9%; --accent-foreground: 0 0% 98%; --destructive: 0 72% 58%; --destructive-foreground: 0 0% 98%;
+      --success: 142 60% 50%; --warning: 38 92% 58%; --border: 240 3.7% 16.9%; --input: 240 3.7% 18%; --ring: 240 4.9% 83.9%;
+      --brand: #17A99B; --brand-soft: rgba(23,169,155,0.16);
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.4); --shadow-md: 0 1px 3px 0 rgb(0 0 0 / 0.5), 0 8px 24px -4px rgb(0 0 0 / 0.5);
+    }
+  }
+  :root[data-theme="light"] {
+    --background: 0 0% 100%; --foreground: 240 10% 3.9%; --card: 0 0% 100%; --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%; --popover-foreground: 240 10% 3.9%; --primary: 240 5.9% 10%; --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%; --secondary-foreground: 240 5.9% 10%; --muted: 240 4.8% 95.9%; --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%; --accent-foreground: 240 5.9% 10%; --destructive: 0 72% 51%; --destructive-foreground: 0 0% 98%;
+    --success: 142 71% 40%; --warning: 35 92% 45%; --border: 240 5.9% 90%; --input: 240 5.9% 90%; --ring: 240 10% 3.9%;
+    --brand: #0E9488; --brand-soft: rgba(14,148,136,0.12);
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05); --shadow-md: 0 1px 3px 0 rgb(0 0 0 / 0.06), 0 4px 14px -2px rgb(0 0 0 / 0.05);
+  }
+  :root[data-theme="dark"] {
+    --background: 240 10% 3.9%; --foreground: 0 0% 98%; --card: 240 6% 10%; --card-foreground: 0 0% 98%;
+    --popover: 240 6% 10%; --popover-foreground: 0 0% 98%; --primary: 0 0% 98%; --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%; --secondary-foreground: 0 0% 98%; --muted: 240 3.7% 15.9%; --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%; --accent-foreground: 0 0% 98%; --destructive: 0 72% 58%; --destructive-foreground: 0 0% 98%;
+    --success: 142 60% 50%; --warning: 38 92% 58%; --border: 240 3.7% 16.9%; --input: 240 3.7% 18%; --ring: 240 4.9% 83.9%;
+    --brand: #17A99B; --brand-soft: rgba(23,169,155,0.16);
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.4); --shadow-md: 0 1px 3px 0 rgb(0 0 0 / 0.5), 0 8px 24px -4px rgb(0 0 0 / 0.5);
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: hsl(var(--background)); color: hsl(var(--foreground));
+    font-family: var(--font-sans); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  .tnum { font-variant-numeric: tabular-nums; }
+  code { font-family: var(--font-mono); font-size: 0.86em; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 22px clamp(14px, 3vw, 30px) 56px; }
+
+  header.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .brand { display: flex; align-items: center; gap: 11px; }
+  .brand .logo { width: 30px; height: 30px; border-radius: calc(var(--radius) - 2px); background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground)); display: grid; place-items: center; font-weight: 700; font-size: 15px; flex: none; }
+  .brand h1 { font-size: 15px; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+  .brand .sub { color: hsl(var(--muted-foreground)); font-weight: 400; }
+
+  .badge { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; border: 1px solid transparent;
+    padding: 2px 10px; font-size: 11.5px; font-weight: 600; line-height: 1.5; white-space: nowrap; }
+  .badge.outline { border-color: hsl(var(--border)); color: hsl(var(--muted-foreground)); }
+  .badge.secondary { background: hsl(var(--secondary)); color: hsl(var(--secondary-foreground)); }
+  .badge .dot { width: 6px; height: 6px; border-radius: 50%; flex: none; }
+  .badge.b-dest { background: hsl(var(--destructive) / 0.1); color: hsl(var(--destructive)); border-color: hsl(var(--destructive) / 0.22); }
+  .badge.b-dest .dot { background: hsl(var(--destructive)); }
+  .badge.b-warn { background: hsl(var(--warning) / 0.12); color: hsl(var(--warning)); border-color: hsl(var(--warning) / 0.25); }
+  .badge.b-warn .dot { background: hsl(var(--warning)); }
+  .badge.b-ok { background: hsl(var(--success) / 0.12); color: hsl(var(--success)); border-color: hsl(var(--success) / 0.25); }
+  .badge.b-ok .dot { background: hsl(var(--success)); }
+
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; font-family: var(--font-sans);
+    font-size: 13px; font-weight: 500; height: 36px; padding: 0 14px; border-radius: calc(var(--radius) - 2px);
+    border: 1px solid transparent; cursor: pointer; white-space: nowrap; transition: background .12s, color .12s, border-color .12s; }
+  .btn.outline { border-color: hsl(var(--border)); background: hsl(var(--background)); color: hsl(var(--foreground)); }
+  .btn.outline:hover { background: hsl(var(--accent)); }
+  .btn.primary { background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); }
+  .btn.primary:hover { background: hsl(var(--primary) / 0.9); }
+  .btn.ghost { background: transparent; color: hsl(var(--foreground)); }
+  .btn.ghost:hover { background: hsl(var(--accent)); }
+  .btn.sm { height: 32px; padding: 0 11px; font-size: 12.5px; }
+  .btn[disabled] { opacity: .45; cursor: not-allowed; }
+
+  .lede { color: hsl(var(--muted-foreground)); font-size: 13px; margin: 10px 0 20px; max-width: 92ch; }
+  .lede b { color: hsl(var(--foreground)); font-weight: 500; }
+
+  .filters { display: flex; flex-wrap: wrap; gap: 9px; align-items: center; margin-bottom: 18px; }
+  .select { display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 12px; font-size: 13px;
+    font-weight: 500; color: hsl(var(--foreground)); background: transparent; border: 1px solid hsl(var(--input));
+    border-radius: calc(var(--radius) - 2px); cursor: pointer; }
+  .select:hover { background: hsl(var(--accent)); }
+  .select .k { color: hsl(var(--muted-foreground)); font-weight: 400; }
+  .select .car { color: hsl(var(--muted-foreground)); font-size: 10px; }
+  .spacer { flex: 1 1 auto; }
+  .tabs { display: inline-flex; align-items: center; height: 36px; background: hsl(var(--muted));
+    border-radius: calc(var(--radius) - 2px); padding: 3px; gap: 2px; }
+  .tabs button { font-family: var(--font-sans); font-size: 12.5px; font-weight: 500; color: hsl(var(--muted-foreground));
+    background: transparent; border: 0; border-radius: calc(var(--radius) - 4px); padding: 0 12px; height: 30px; cursor: pointer; }
+  .tabs button[aria-pressed="true"] { background: hsl(var(--background)); color: hsl(var(--foreground)); box-shadow: var(--shadow-sm); }
+
+  .card { background: hsl(var(--card)); color: hsl(var(--card-foreground)); border: 1px solid hsl(var(--border));
+    border-radius: var(--radius); box-shadow: var(--shadow-sm); }
+
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 14px; }
+  .kpi { padding: 18px; display: flex; flex-direction: column; gap: 9px; }
+  .kpi .lab { font-size: 12px; color: hsl(var(--muted-foreground)); font-weight: 500; }
+  .kpi .val { font-size: 24px; font-weight: 620; letter-spacing: -0.02em; line-height: 1; }
+  .kpi .val code { font-size: 0.9em; }
+  .kpi .foot { font-size: 12px; color: hsl(var(--muted-foreground)); }
+
+  .alert { display: flex; gap: 13px; padding: 15px 17px; margin-bottom: 14px; border: 1px solid hsl(var(--border));
+    border-radius: var(--radius); background: hsl(var(--muted) / 0.4); }
+  .alert .ico { width: 20px; height: 20px; color: hsl(var(--muted-foreground)); flex: none; margin-top: 1px;
+    display: grid; place-items: center; border: 1.6px solid currentColor; border-radius: 50%; font-weight: 700; font-size: 12px; }
+  .alert .body { flex: 1 1 auto; min-width: 0; }
+  .alert .h { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .alert .h strong { font-size: 14px; font-weight: 600; }
+  .alert .h .meta { font-size: 12px; color: hsl(var(--muted-foreground)); }
+  .alert p { margin: 6px 0 0; font-size: 13px; color: hsl(var(--foreground) / 0.85); max-width: 90ch; }
+
+  /* release lane */
+  .lane { padding: 8px 10px 14px; }
+  .lane .chd { padding: 8px 10px 0; }
+  svg.rl { width: 100%; height: auto; display: block; }
+  .rl-vlabel { font-family: var(--font-mono); font-weight: 700; }
+  .rl-cap { font-family: var(--font-sans); font-size: 11px; fill: hsl(var(--muted-foreground)); }
+  .rl-envtxt { font-family: var(--font-sans); font-size: 11px; font-weight: 600; }
+
+  .cols { display: grid; grid-template-columns: 1.5fr 1fr; gap: 14px; align-items: start; }
+  .chd { padding: 16px 18px 0; }
+  .chd .t { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+  .chd .s { font-size: 12.5px; color: hsl(var(--muted-foreground)); margin-top: 2px; }
+
+  .tbl-wrap { overflow-x: auto; padding: 8px 8px 10px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 480px; }
+  thead th { text-align: right; font-size: 12px; color: hsl(var(--muted-foreground)); font-weight: 500; padding: 8px 12px; height: 40px; }
+  thead th:first-child, thead th.l { text-align: left; }
+  tbody td { padding: 12px; border-top: 1px solid hsl(var(--border)); text-align: right; }
+  tbody td:first-child, tbody td.l { text-align: left; }
+  tbody tr:hover td { background: hsl(var(--muted) / 0.5); }
+  tbody td.num { font-variant-numeric: tabular-nums; }
+  .acts { display: inline-flex; gap: 6px; justify-content: flex-end; }
+
+  /* resolve panel */
+  .resolve { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 14px; }
+  .aliasrow { display: flex; align-items: center; gap: 10px; }
+  .aliasrow .env { font-size: 12px; color: hsl(var(--muted-foreground)); width: 76px; font-weight: 500; }
+  .aliasrow .arrow { color: hsl(var(--muted-foreground)); }
+  .aliasrow .ver { font-family: var(--font-mono); font-weight: 650; font-size: 14px; }
+  .codeblock { background: hsl(var(--muted) / 0.6); border: 1px solid hsl(var(--border)); border-radius: calc(var(--radius) - 2px);
+    padding: 12px 13px; font-family: var(--font-mono); font-size: 12px; color: hsl(var(--foreground)); overflow-x: auto; }
+  .codeblock .c { color: hsl(var(--muted-foreground)); }
+  .codeblock .g { color: hsl(var(--success)); }
+  .note { font-size: 12px; color: hsl(var(--muted-foreground)); line-height: 1.55; }
+  .note b { color: hsl(var(--foreground)); font-weight: 500; }
+
+  footer { margin-top: 26px; padding-top: 16px; border-top: 1px solid hsl(var(--border));
+    color: hsl(var(--muted-foreground)); font-size: 12px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  footer a { color: hsl(var(--foreground)); text-decoration: none; font-weight: 500; }
+  footer a:hover { text-decoration: underline; }
+
+  :focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; border-radius: 6px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  @media (max-width: 860px) { .kpis { grid-template-columns: repeat(2, 1fr); } .cols { grid-template-columns: 1fr; } }
+  @media (max-width: 460px) { .kpis { grid-template-columns: 1fr; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">@</span>
+      <h1>Prompt Registry <span class="sub">/ console</span></h1>
+      <span class="badge secondary">Prototype · synthetic data</span>
+    </div>
+    <button class="btn outline sm" id="themeBtn" aria-label="Toggle colour theme">
+      <span id="themeIco" aria-hidden="true">◐</span><span id="themeTxt">Theme</span>
+    </button>
+  </header>
+
+  <p class="lede">Design mockup for the <b>prompt-registry</b> repository — a prompt is code: <b>versioned, immutable,
+    tested, promoted, and rolled back</b>. Rollback is one operation, because the previous version is still there.
+    Built on the shadcn/ui token system. Figures are illustrative.</p>
+
+  <div class="filters">
+    <button class="select"><span class="k">Prompt</span> <code>summarise</code> <span class="car">▾</span></button>
+    <button class="select"><span class="k">Project</span> billing-ai <span class="car">▾</span></button>
+    <span class="spacer"></span>
+    <div class="tabs" role="group" aria-label="Environment filter">
+      <button aria-pressed="true">All</button>
+      <button aria-pressed="false">Production</button>
+      <button aria-pressed="false">Staging</button>
+    </div>
+  </div>
+
+  <div class="kpis">
+    <div class="card kpi">
+      <span class="lab"><code>production</code> resolves</span>
+      <span class="val"><code>summarise@v7</code></span>
+      <span class="badge b-ok"><span class="dot"></span> active</span>
+    </div>
+    <div class="card kpi">
+      <span class="lab"><code>staging</code> resolves</span>
+      <span class="val"><code>summarise@v8</code></span>
+      <span class="badge b-warn"><span class="dot"></span> under test</span>
+    </div>
+    <div class="card kpi">
+      <span class="lab">Golden-set gate</span>
+      <span class="val">Blocking</span>
+      <span class="badge b-dest"><span class="dot"></span> v8 failed</span>
+    </div>
+    <div class="card kpi">
+      <span class="lab">Last rollback</span>
+      <span class="val tnum">2h ago</span>
+      <span class="foot"><code>v8 → v7</code> · no deploy</span>
+    </div>
+  </div>
+
+  <div class="alert" role="status">
+    <div class="ico" aria-hidden="true">i</div>
+    <div class="body">
+      <div class="h"><strong>Production rolled back to v7</strong>
+        <span class="meta">re-pointed the <code>production</code> alias · propagated on next refresh (~60s) · no redeploy</span></div>
+      <p>v8 failed the regression gate — <b>42% win-rate vs v7</b> on the golden set. Rollback was possible because v7
+        is <b>immutable and still present</b>. v8 stays in staging for inspection; nothing was overwritten.</p>
+    </div>
+  </div>
+
+  <!-- hero: release lane -->
+  <div class="card lane" style="margin-bottom:14px">
+    <div class="chd"><div class="t">Release lane</div>
+      <div class="s">Every version is published once and never changes. Aliases move; versions do not.</div></div>
+    <svg class="rl" viewBox="0 0 720 150" preserveAspectRatio="xMidYMid meet" role="img"
+         aria-label="Versions v5 to v8 on a lane; production points at v7, staging at v8, with a rollback arrow from v8 to v7.">
+      <line x1="150" y1="70" x2="630" y2="70" stroke="hsl(var(--border))" stroke-width="2"></line>
+      <!-- rollback arc v8 -> v7 -->
+      <path d="M 630 48 C 610 14 490 14 472 47" fill="none" stroke="var(--brand)" stroke-width="2" stroke-dasharray="4 3"></path>
+      <polygon points="472,49 466,38 478,40" fill="var(--brand)"></polygon>
+      <text x="551" y="12" text-anchor="middle" class="rl-cap" fill="var(--brand)">rollback · 2h ago</text>
+      <!-- nodes -->
+      <g>
+        <circle cx="150" cy="70" r="19" fill="hsl(var(--muted))" stroke="hsl(var(--border))" stroke-width="1.5"></circle>
+        <text x="150" y="74" text-anchor="middle" class="rl-vlabel" fill="hsl(var(--muted-foreground))" font-size="13">v5</text>
+      </g>
+      <g>
+        <circle cx="310" cy="70" r="19" fill="hsl(var(--muted))" stroke="hsl(var(--border))" stroke-width="1.5"></circle>
+        <text x="310" y="74" text-anchor="middle" class="rl-vlabel" fill="hsl(var(--muted-foreground))" font-size="13">v6</text>
+      </g>
+      <g>
+        <circle cx="470" cy="70" r="21" fill="var(--brand-soft)" stroke="var(--brand)" stroke-width="2.5"></circle>
+        <text x="470" y="75" text-anchor="middle" class="rl-vlabel" fill="var(--brand)" font-size="14">v7</text>
+        <rect x="433" y="99" width="74" height="22" rx="11" fill="hsl(var(--success) / 0.12)" stroke="hsl(var(--success) / 0.3)"></rect>
+        <text x="470" y="114" text-anchor="middle" class="rl-envtxt" fill="hsl(var(--success))">production</text>
+      </g>
+      <g>
+        <circle cx="630" cy="70" r="21" fill="hsl(var(--destructive) / 0.1)" stroke="hsl(var(--destructive))" stroke-width="2.5"></circle>
+        <text x="630" y="75" text-anchor="middle" class="rl-vlabel" fill="hsl(var(--destructive))" font-size="14">v8</text>
+        <rect x="597" y="99" width="66" height="22" rx="11" fill="hsl(var(--warning) / 0.12)" stroke="hsl(var(--warning) / 0.3)"></rect>
+        <text x="630" y="114" text-anchor="middle" class="rl-envtxt" fill="hsl(var(--warning))">staging</text>
+      </g>
+      <text x="150" y="140" text-anchor="middle" class="rl-cap">archived</text>
+      <text x="310" y="140" text-anchor="middle" class="rl-cap">archived</text>
+      <text x="470" y="140" text-anchor="middle" class="rl-cap">Jul 18 · win-rate 61%</text>
+      <text x="630" y="140" text-anchor="middle" class="rl-cap">Jul 24 · win-rate 42%</text>
+    </svg>
+  </div>
+
+  <div class="cols">
+    <div class="card">
+      <div class="chd"><div class="t">Version history</div><div class="s">Immutable — a new wording is a new version</div></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr><th class="l">Version</th><th>Published</th><th>Regression vs prev</th><th class="l" style="padding-left:20px">Environment</th><th></th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>v8</code></td><td class="num">Jul 24</td>
+              <td class="num" style="color:hsl(var(--destructive))">✗ 42% win-rate</td>
+              <td class="l" style="padding-left:20px"><span class="badge b-warn"><span class="dot"></span> Staging</span></td>
+              <td><div class="acts"><button class="btn outline sm">Diff</button><button class="btn primary sm" disabled>Promote</button></div></td>
+            </tr>
+            <tr>
+              <td><code>v7</code></td><td class="num">Jul 18</td>
+              <td class="num" style="color:hsl(var(--success))">✓ 61% win-rate</td>
+              <td class="l" style="padding-left:20px"><span class="badge b-ok"><span class="dot"></span> Production</span></td>
+              <td><div class="acts"><button class="btn outline sm">Diff</button></div></td>
+            </tr>
+            <tr>
+              <td><code>v6</code></td><td class="num">Jul 09</td>
+              <td class="num" style="color:hsl(var(--success))">✓ 58% win-rate</td>
+              <td class="l" style="padding-left:20px"><span class="badge secondary">Archived</span></td>
+              <td><div class="acts"><button class="btn outline sm">Diff</button></div></td>
+            </tr>
+            <tr>
+              <td><code>v5</code></td><td class="num">Jul 01</td>
+              <td class="num" style="color:hsl(var(--success))">✓ 55% win-rate</td>
+              <td class="l" style="padding-left:20px"><span class="badge secondary">Archived</span></td>
+              <td><div class="acts"><button class="btn outline sm">Diff</button></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="chd"><div class="t">Alias resolution</div><div class="s">What an application gets</div></div>
+      <div class="resolve">
+        <div class="aliasrow">
+          <span class="env"><code>production</code></span><span class="arrow">→</span>
+          <span class="ver">summarise@v7</span><span class="badge b-ok"><span class="dot"></span> active</span>
+        </div>
+        <div class="aliasrow">
+          <span class="env"><code>staging</code></span><span class="arrow">→</span>
+          <span class="ver">summarise@v8</span><span class="badge b-warn"><span class="dot"></span> testing</span>
+        </div>
+        <div class="codeblock"><span class="c"># the app references an alias, never a literal</span><br>
+          resolve(<span class="g">"summarise@production"</span>)<br>
+          &nbsp;&nbsp;⇒ v7 &nbsp;<span class="c">(cached · refresh ~60s)</span></div>
+        <div class="note"><b>Lifecycle:</b> publish → test → promote → reference. Promotion re-points an alias at a
+          version that passed the golden-set gate; <b>rollback re-points it back</b> — seconds, no deploy — because the
+          old version was never overwritten.</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <span>Design prototype · docs-first mockup · shadcn/ui token system · not a live product.</span>
+    <span><a href="https://github.com/prodrigues2023/prompt-registry">prodrigues2023/prompt-registry</a></span>
+  </footer>
+</div>
+
+<script>
+  const root = document.documentElement, tb = document.getElementById('themeBtn');
+  const tIco = document.getElementById('themeIco'), tTxt = document.getElementById('themeTxt');
+  const isDark = () => root.getAttribute('data-theme') ? root.getAttribute('data-theme') === 'dark'
+    : matchMedia('(prefers-color-scheme: dark)').matches;
+  const sync = () => { const d = isDark(); tIco.textContent = d ? '☾' : '☀'; tTxt.textContent = d ? 'Dark' : 'Light'; };
+  tb.addEventListener('click', () => { root.setAttribute('data-theme', isDark() ? 'light' : 'dark'); sync(); });
+  sync();
+  document.querySelectorAll('.tabs').forEach(seg => seg.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    seg.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b));
+  }));
+</script>
