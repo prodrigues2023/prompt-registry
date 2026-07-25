@@ -29,7 +29,7 @@ application already has.
 | --- | --- | --- |
 | Context & scope | Done | [docs/context.md](./docs/context.md) |
 | Lifecycle diagrams | Done | [docs/diagrams](./docs/diagrams) |
-| UI prototype (design mockup) | Done | [docs/prototype](./docs/prototype) |
+| UI prototype (design mockup) | Done | [▶ live demo](https://prodrigues2023.github.io/prompt-registry/prototype/) · [source](./docs/prototype) |
 | Architecture Decision Records | 5 published | [docs/adr](./docs/adr) |
 | Why prompts are code | Done | [docs/prompts-are-code.md](./docs/prompts-are-code.md) |
 | Registry implementation | Planned — Phase 3 | [ROADMAP.md](./ROADMAP.md) |
