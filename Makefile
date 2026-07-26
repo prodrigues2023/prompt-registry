@@ -1,6 +1,6 @@
 # Prompt Registry — local environment. One command each.
 
-.PHONY: up down logs demo regression app build test
+.PHONY: up down logs demo regression drills rollback-drill fleet-drill fallback-drill app build test
 
 ## up: build and start the registry + Postgres, wait until healthy
 up:
@@ -27,6 +27,21 @@ demo:
 ## regression: run the golden-set harness — a caught regression blocks a promotion (Milestone 4)
 regression:
 	./scripts/regression.sh
+
+## drills: run the self-contained validation drills (fleet + fallback; no server needed)
+drills: fleet-drill fallback-drill
+
+## rollback-drill: measure how fast a rollback reaches a consumer (needs `make up`)
+rollback-drill:
+	dotnet run --project src/PromptRegistry.Drills -- rollback
+
+## fleet-drill: two instances briefly disagree during a refresh, then converge
+fleet-drill:
+	dotnet run --project src/PromptRegistry.Drills -- fleet
+
+## fallback-drill: registry down at cold start serves bundled; warm serves stale
+fallback-drill:
+	dotnet run --project src/PromptRegistry.Drills -- fallback
 
 ## app: run the example consumer (resolves prompt://checkout-summary@production live)
 app:

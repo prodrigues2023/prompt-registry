@@ -54,6 +54,7 @@ One command brings up the registry and Postgres; migrations apply at startup.
 make up         # build + start the registry on http://localhost:8080
 make demo       # publish, test, promote, block a regression, roll back — end to end
 make regression # run the golden-set harness: a caught regression blocks a promotion
+make drills     # fleet-consistency + fallback drills (self-contained, no server)
 make app        # run the example consumer that resolves prompt://checkout-summary@production live
 make down       # stop everything and drop the volume
 ```
@@ -69,6 +70,7 @@ one operation**. What the pieces are:
 | [`PromptRegistry.Api`](./src/PromptRegistry.Api) | Append-only store, promote/rollback as an alias move, resolve endpoint |
 | [`PromptRegistry.Client`](./src/PromptRegistry.Client) | Resolve-by-alias with TTL cache, stale-serve, and bundled cold-start fallback |
 | [`PromptRegistry.Harness`](./src/PromptRegistry.Harness) | `promptcheck`: runs the golden set, compares to the baseline per slice, writes the gate |
+| [`PromptRegistry.Drills`](./src/PromptRegistry.Drills) | `drills`: the self-asserting validation drills — rollback timing, fleet consistency, fallback |
 | [`CheckoutSummarizer`](./samples/CheckoutSummarizer) | An example consumer that knows only the reference — never a version literal |
 
 The store is **append-only**: a published version is never mutated, so a rollback is a pointer
@@ -104,6 +106,25 @@ model** (no cloud account, per the laptop constraint); the methodology, not the 
 *How* to score one version better than another is owned by the
 [rag-evaluation-toolkit](https://github.com/prodrigues2023/rag-evaluation-toolkit) — this registry
 **runs** that judgement as a gate.
+
+## Validation drills
+
+Three drills prove the promises the registry makes about failure and recovery, each self-asserting
+so they double as tests — *shown, not asserted*:
+
+| Drill | What it proves | Run |
+| --- | --- | --- |
+| **Rollback** | A rollback reaches a running consumer within the cache TTL — seconds, no redeploy | `make rollback-drill` (needs `make up`) |
+| **Fleet consistency** | Two instances briefly disagree during a refresh, then converge — consistency is eventual, bounded by the TTL | `make fleet-drill` |
+| **Fallback** | A registry outage degrades to the bundled version (cold start) or last-known-good (warm), never a hard failure | `make fallback-drill` |
+
+The fleet and fallback drills are self-contained (an in-process fake registry, no server); the
+rollback drill measures real propagation against a running registry. Sample output:
+
+```
+rollback issued -> consumer served v1 again after 1011 ms
+bounded by the 1s consumer cache TTL — no application redeploy, no restart.
+```
 
 ## Why documented first
 

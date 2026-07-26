@@ -71,13 +71,15 @@ sample app follow — all without redeploying the app.
 | --- | --- | --- |
 | Regression harness | Run a new version against a golden set, compare to the current version | Done — [`promptcheck`](./src/PromptRegistry.Harness) |
 | A caught regression | A prompt change that degrades one slice; assert the gate blocks it | Done — [`scripts/regression.sh`](./scripts/regression.sh) |
-| Rollback drill | Promote a bad version, roll it back, measure propagation time | Rollback shown ([`scripts/demo.sh`](./scripts/demo.sh)); timed drill pending |
-| Fleet-consistency test | Observe the brief cross-instance disagreement during a refresh | Pending |
-| Fallback test | Registry unreachable at cold start; assert the bundled version serves | Implemented in the client's bundled fallback; scripted test pending |
+| Rollback drill | Promote a bad version, roll it back, measure propagation time | Done — [`drills rollback`](./src/PromptRegistry.Drills), `make rollback-drill` |
+| Fleet-consistency test | Observe the brief cross-instance disagreement during a refresh | Done — [`drills fleet`](./src/PromptRegistry.Drills), `make fleet-drill` |
+| Fallback test | Registry unreachable at cold start; assert the bundled version serves | Done — [`drills fallback`](./src/PromptRegistry.Drills), `make fallback-drill` |
 
 **Exit criteria:** a regression is demonstrably caught before promotion, and a rollback is
-demonstrably faster than a redeploy — both shown, not asserted.
+demonstrably faster than a redeploy — both shown, not asserted. **Met.**
 
-The headline is delivered: the golden-set harness catches a regression and its failing gate blocks
-the promotion, run end to end by `make regression`. The remaining items are validation *drills*
-(timed rollback, fleet-consistency, cold-start fallback) that exercise behaviour already built.
+The golden-set harness catches a regression and its failing gate blocks the promotion
+(`make regression`). The three validation drills each run and self-assert: a rollback reaches a
+consumer within the cache TTL (`make rollback-drill`), two instances briefly disagree during a
+refresh and then converge (`make fleet-drill`), and a registry outage degrades to the bundled or
+last-known-good version instead of failing (`make fallback-drill`).
