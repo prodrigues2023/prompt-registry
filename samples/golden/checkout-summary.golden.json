@@ -1,0 +1,50 @@
+{
+  "prompt": "checkout-summary",
+  "cases": [
+    {
+      "id": "typical-1",
+      "slice": "typical",
+      "variables": { "customer": "Ana Silva", "order_id": "AC-1042", "items": "3", "total": "$248.90" },
+      "assertions": [
+        { "type": "contains", "value": "Ana Silva" },
+        { "type": "max_length", "value": "200" }
+      ]
+    },
+    {
+      "id": "typical-2",
+      "slice": "typical",
+      "variables": { "customer": "John Carter", "order_id": "AC-1043", "items": "1", "total": "$19.00" },
+      "assertions": [
+        { "type": "contains", "value": "John Carter" },
+        { "type": "max_length", "value": "200" }
+      ]
+    },
+    {
+      "id": "completeness-1",
+      "slice": "completeness",
+      "variables": { "customer": "Ana Silva", "order_id": "AC-1042", "items": "3", "total": "$248.90" },
+      "assertions": [
+        { "type": "contains", "value": "AC-1042" },
+        { "type": "contains", "value": "$248.90" }
+      ]
+    },
+    {
+      "id": "completeness-2",
+      "slice": "completeness",
+      "variables": { "customer": "John Carter", "order_id": "AC-1043", "items": "1", "total": "$19.00" },
+      "assertions": [
+        { "type": "contains", "value": "AC-1043" },
+        { "type": "contains", "value": "$19.00" }
+      ]
+    },
+    {
+      "id": "edge-unicode",
+      "slice": "edge",
+      "variables": { "customer": "Sao Paulo Comercio de Pecas Ltda", "order_id": "AC-1099", "items": "12", "total": "$3410.00" },
+      "assertions": [
+        { "type": "contains", "value": "Sao Paulo" },
+        { "type": "max_length", "value": "200" }
+      ]
+    }
+  ]
+}

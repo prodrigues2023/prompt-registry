@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\PromptRegistry.Core\PromptRegistry.Core.csproj" />
+    <ProjectReference Include="..\..\src\PromptRegistry.Harness\PromptRegistry.Harness.csproj" />
   </ItemGroup>
 
 </Project>

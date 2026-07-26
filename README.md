@@ -32,7 +32,8 @@ application already has.
 | UI prototype (design mockup) | Done | [▶ live demo](https://prodrigues2023.github.io/prompt-registry/prototype/) · [source](./docs/prototype) |
 | Architecture Decision Records | 5 published | [docs/adr](./docs/adr) |
 | Why prompts are code | Done | [docs/prompts-are-code.md](./docs/prompts-are-code.md) |
-| Registry (API, client, sample) | In progress — Phase 3 | [Run it locally](#run-it-locally) · [src](./src) |
+| Registry (API, client, consumer) | Done — Phase 3 | [Run it locally](#run-it-locally) · [src](./src) |
+| Regression harness (golden set → gate) | Done — Phase 4 | [The gate](#testing-a-prompt-change--the-gate) · [src](./src/PromptRegistry.Harness) |
 
 ## The idea
 
@@ -50,10 +51,11 @@ rather than a string.
 One command brings up the registry and Postgres; migrations apply at startup.
 
 ```bash
-make up        # build + start the registry on http://localhost:8080
-make demo      # publish, test, promote, block a regression, roll back — end to end
-make app       # run the example consumer that resolves prompt://checkout-summary@production live
-make down      # stop everything and drop the volume
+make up         # build + start the registry on http://localhost:8080
+make demo       # publish, test, promote, block a regression, roll back — end to end
+make regression # run the golden-set harness: a caught regression blocks a promotion
+make app        # run the example consumer that resolves prompt://checkout-summary@production live
+make down       # stop everything and drop the volume
 ```
 
 `make demo` walks the whole lifecycle against the running registry and prints each step: a
@@ -66,10 +68,42 @@ one operation**. What the pieces are:
 | [`PromptRegistry.Core`](./src/PromptRegistry.Core) | The domain: immutable version, `prompt://name@env` reference, content hash |
 | [`PromptRegistry.Api`](./src/PromptRegistry.Api) | Append-only store, promote/rollback as an alias move, resolve endpoint |
 | [`PromptRegistry.Client`](./src/PromptRegistry.Client) | Resolve-by-alias with TTL cache, stale-serve, and bundled cold-start fallback |
+| [`PromptRegistry.Harness`](./src/PromptRegistry.Harness) | `promptcheck`: runs the golden set, compares to the baseline per slice, writes the gate |
 | [`CheckoutSummarizer`](./samples/CheckoutSummarizer) | An example consumer that knows only the reference — never a version literal |
 
 The store is **append-only**: a published version is never mutated, so a rollback is a pointer
 move rather than a redeploy, and a test result stays attached to the exact bytes it graded.
+
+## Testing a prompt change — the gate
+
+`make regression` runs the harness that decides a promotion so a human spot-check does not have to.
+It embodies [ADR-0004](./docs/adr/0004-regression-testing.md): the test is **comparative** (is the
+candidate at least as good as the version it would replace?), scored by **properties** not exact
+output, evaluated **per slice** so a change that degrades any one class of inputs fails, and run
+several times per case because the model is non-deterministic.
+
+```bash
+promptcheck --prompt checkout-summary --candidate 2 \
+            --golden samples/golden/checkout-summary.golden.json --gate
+```
+
+A "reads better, quietly drops the order number and total" rewrite is exactly the change a
+spot-check waves through. The harness catches it:
+
+```
+slice              candidate    baseline     delta   verdict
+completeness            0.0%      100.0%   -100.0%   REGRESSED
+edge                  100.0%      100.0%     +0.0%   ok
+typical               100.0%      100.0%     +0.0%   ok
+FAIL: Regression on slice(s) completeness ...
+```
+
+With `--gate` the verdict is written back to the version, and a failing gate **blocks the
+promotion** — the regression never reaches production. The evaluation runs against a **local stub
+model** (no cloud account, per the laptop constraint); the methodology, not the stub, is the point.
+*How* to score one version better than another is owned by the
+[rag-evaluation-toolkit](https://github.com/prodrigues2023/rag-evaluation-toolkit) — this registry
+**runs** that judgement as a gate.
 
 ## Why documented first
 

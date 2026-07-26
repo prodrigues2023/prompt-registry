@@ -1,6 +1,6 @@
 # Prompt Registry — local environment. One command each.
 
-.PHONY: up down logs demo app build test
+.PHONY: up down logs demo regression app build test
 
 ## up: build and start the registry + Postgres, wait until healthy
 up:
@@ -23,6 +23,10 @@ logs:
 ## demo: run the full lifecycle — publish, test, promote, blocked regression, rollback
 demo:
 	./scripts/demo.sh
+
+## regression: run the golden-set harness — a caught regression blocks a promotion (Milestone 4)
+regression:
+	./scripts/regression.sh
 
 ## app: run the example consumer (resolves prompt://checkout-summary@production live)
 app:

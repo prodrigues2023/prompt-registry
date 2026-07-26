@@ -67,13 +67,17 @@ sample app follow — all without redeploying the app.
 
 **Goal:** prove the testing and rollback the registry promises.
 
-| Issue | Deliverable |
-| --- | --- |
-| Regression harness | Run a new version against a golden set, compare to the current version |
-| A caught regression | A prompt change that degrades one slice; assert the gate blocks it |
-| Rollback drill | Promote a bad version, roll it back, measure propagation time |
-| Fleet-consistency test | Observe the brief cross-instance disagreement during a refresh |
-| Fallback test | Registry unreachable at cold start; assert the bundled version serves |
+| Issue | Deliverable | Status |
+| --- | --- | --- |
+| Regression harness | Run a new version against a golden set, compare to the current version | Done — [`promptcheck`](./src/PromptRegistry.Harness) |
+| A caught regression | A prompt change that degrades one slice; assert the gate blocks it | Done — [`scripts/regression.sh`](./scripts/regression.sh) |
+| Rollback drill | Promote a bad version, roll it back, measure propagation time | Rollback shown ([`scripts/demo.sh`](./scripts/demo.sh)); timed drill pending |
+| Fleet-consistency test | Observe the brief cross-instance disagreement during a refresh | Pending |
+| Fallback test | Registry unreachable at cold start; assert the bundled version serves | Implemented in the client's bundled fallback; scripted test pending |
 
 **Exit criteria:** a regression is demonstrably caught before promotion, and a rollback is
 demonstrably faster than a redeploy — both shown, not asserted.
+
+The headline is delivered: the golden-set harness catches a regression and its failing gate blocks
+the promotion, run end to end by `make regression`. The remaining items are validation *drills*
+(timed rollback, fleet-consistency, cold-start fallback) that exercise behaviour already built.
