@@ -1,9 +1,9 @@
 using PromptRegistry.Client;
 using PromptRegistry.Core;
 
-// A stand-in for a real application. It knows one thing: the reference prompt://checkout-summary@production.
-// It never names a version. Run it, then promote or roll back in another terminal and watch the
-// version it resolves change live — with no redeploy of this process.
+// An example consumer: a checkout-summarising app that knows one thing — the reference
+// prompt://checkout-summary@production. It never names a version. Run it, then promote or roll
+// back in another terminal and watch the version it resolves change live — with no redeploy.
 
 var baseUrl = new Uri(Environment.GetEnvironmentVariable("REGISTRY_URL") ?? "http://localhost:8080");
 const string reference = "prompt://checkout-summary@production";

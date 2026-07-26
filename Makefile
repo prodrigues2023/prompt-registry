@@ -1,6 +1,6 @@
 # Prompt Registry — local environment. One command each.
 
-.PHONY: up down logs demo sample build test
+.PHONY: up down logs demo app build test
 
 ## up: build and start the registry + Postgres, wait until healthy
 up:
@@ -24,9 +24,9 @@ logs:
 demo:
 	./scripts/demo.sh
 
-## sample: run the sample application (resolves prompt://checkout-summary@production live)
-sample:
-	dotnet run --project samples/SampleApp/SampleApp.csproj
+## app: run the example consumer (resolves prompt://checkout-summary@production live)
+app:
+	dotnet run --project samples/CheckoutSummarizer/CheckoutSummarizer.csproj
 
 ## build: compile the whole solution
 build:

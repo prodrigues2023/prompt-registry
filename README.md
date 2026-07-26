@@ -52,7 +52,7 @@ One command brings up the registry and Postgres; migrations apply at startup.
 ```bash
 make up        # build + start the registry on http://localhost:8080
 make demo      # publish, test, promote, block a regression, roll back — end to end
-make sample    # run an app that resolves prompt://checkout-summary@production live
+make app       # run the example consumer that resolves prompt://checkout-summary@production live
 make down      # stop everything and drop the volume
 ```
 
@@ -66,7 +66,7 @@ one operation**. What the pieces are:
 | [`PromptRegistry.Core`](./src/PromptRegistry.Core) | The domain: immutable version, `prompt://name@env` reference, content hash |
 | [`PromptRegistry.Api`](./src/PromptRegistry.Api) | Append-only store, promote/rollback as an alias move, resolve endpoint |
 | [`PromptRegistry.Client`](./src/PromptRegistry.Client) | Resolve-by-alias with TTL cache, stale-serve, and bundled cold-start fallback |
-| [`SampleApp`](./samples/SampleApp) | An app that knows only the reference — never a version literal |
+| [`CheckoutSummarizer`](./samples/CheckoutSummarizer) | An example consumer that knows only the reference — never a version literal |
 
 The store is **append-only**: a published version is never mutated, so a rollback is a pointer
 move rather than a redeploy, and a test result stays attached to the exact bytes it graded.
