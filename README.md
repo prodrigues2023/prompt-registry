@@ -44,6 +44,12 @@ API. Below: `checkout.order-summary` after a bad `v3` was rolled back to the imm
 
 ![The Prompt Registry console — KPIs, a release lane with a rollback arc, version history, and alias resolution](./docs/images/console-dashboard.png)
 
+Promote and roll back are one operation and take effect with no redeploy — here `v4` is promoted to
+production, then rolled back to the immutable `v1`, and the release lane, KPIs, and alias resolution
+all follow:
+
+![Promoting a version to production and rolling it back, live in the console](./docs/images/console-promote-rollback.gif)
+
 ## The idea
 
 **A prompt in production has a version, and the application references it by name, not by

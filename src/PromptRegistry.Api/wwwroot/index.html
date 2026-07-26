@@ -266,6 +266,10 @@ async function init(){
   $('#promptSel').onchange = () => loadPrompt($('#promptSel').value);
   $('#envTabs').onclick = e => { const b=e.target.closest('button'); if(!b) return;
     envFilter=b.dataset.env; [...$('#envTabs').children].forEach(x=>x.setAttribute('aria-pressed', x===b)); renderHistory(); };
+  const params = new URLSearchParams(location.search);
+  const qNs = params.get('namespace'), qPrompt = params.get('prompt');
+  if(qNs && [...$('#nsSel').options].some(o=>o.value===qNs)){ $('#nsSel').value=qNs; fillPromptSelect(); }
+  if(qPrompt && [...$('#promptSel').options].some(o=>o.value===qPrompt)){ $('#promptSel').value=qPrompt; }
   if($('#promptSel').value) loadPrompt($('#promptSel').value);
 }
 
