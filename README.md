@@ -30,10 +30,19 @@ application already has.
 | Context & scope | Done | [docs/context.md](./docs/context.md) |
 | Lifecycle diagrams | Done | [docs/diagrams](./docs/diagrams) |
 | UI prototype (design mockup) | Done | [▶ live demo](https://prodrigues2023.github.io/prompt-registry/prototype/) · [source](./docs/prototype) |
+| Live console (dashboard) | Done | [The console](#the-console) · served at `/` |
 | Architecture Decision Records | 5 published | [docs/adr](./docs/adr) |
 | Why prompts are code | Done | [docs/prompts-are-code.md](./docs/prompts-are-code.md) |
 | Registry (API, client, consumer) | Done — Phase 3 | [Run it locally](#run-it-locally) · [src](./src) |
 | Regression harness (golden set → gate) | Done — Phase 4 | [The gate](#testing-a-prompt-change--the-gate) · [src](./src/PromptRegistry.Harness) |
+
+## The console
+
+The registry serves a live dashboard at `http://localhost:8080/` — pick a prompt to see its release
+lane, version history, and the version each environment resolves to. Promote and roll back call the
+API. Below: `checkout.order-summary` after a bad `v3` was rolled back to the immutable `v2`.
+
+![The Prompt Registry console — KPIs, a release lane with a rollback arc, version history, and alias resolution](./docs/images/console-dashboard.png)
 
 ## The idea
 
