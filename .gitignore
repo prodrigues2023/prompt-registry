@@ -25,6 +25,7 @@ Thumbs.db
 bin/
 obj/
 *.user
+.vs/
 
 # Build / data
 dist/
