@@ -18,6 +18,10 @@ var migrationsDir = Environment.GetEnvironmentVariable("MIGRATIONS_DIR")
 if (Directory.Exists(migrationsDir))
     await app.Services.GetRequiredService<PromptStore>().MigrateAsync(migrationsDir);
 
+// Serve the live console (wwwroot/index.html) at / — same origin as the API, so no CORS needed.
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
 // --- Catalog (list + filter by namespace/service) -----------------------------------------

@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prompt Registry — console</title>
+<style>
+  :root{
+    --background:0 0% 100%;--foreground:240 10% 3.9%;--card:0 0% 100%;--muted:240 4.8% 95.9%;
+    --muted-foreground:240 3.8% 46.1%;--primary:240 5.9% 10%;--primary-foreground:0 0% 98%;
+    --border:240 5.9% 90%;--input:240 5.9% 90%;--ring:240 10% 3.9%;--brand:#0E9488;
+    --green:142 71% 35%;--green-bg:142 71% 95%;--red:0 72% 45%;--red-bg:0 72% 96%;
+    --radius:0.625rem;
+    --font-sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){:root{
+    --background:240 10% 3.9%;--foreground:0 0% 98%;--card:240 6% 10%;--muted:240 3.7% 15.9%;
+    --muted-foreground:240 5% 64.9%;--primary:0 0% 98%;--primary-foreground:240 5.9% 10%;
+    --border:240 3.7% 16.9%;--input:240 3.7% 16.9%;--ring:240 4.9% 83.9%;--brand:#17A99B;
+    --green:142 60% 55%;--green-bg:142 45% 14%;--red:0 72% 62%;--red-bg:0 55% 15%;
+  }}
+  *{box-sizing:border-box}
+  body{margin:0;background:hsl(var(--background));color:hsl(var(--foreground));font-family:var(--font-sans);
+    line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1000px;margin:0 auto;padding:40px 24px 64px}
+  .brand{display:flex;align-items:center;gap:11px;margin-bottom:6px}
+  .logo{width:32px;height:32px;border-radius:calc(var(--radius) - 3px);background:hsl(var(--primary));
+    color:hsl(var(--primary-foreground));display:grid;place-items:center;font-weight:700;font-size:16px}
+  .brand .n{font-family:var(--font-mono);font-size:14px;font-weight:600}
+  .badge{display:inline-flex;align-items:center;border-radius:999px;border:1px solid hsl(var(--border));
+    padding:2px 10px;font-size:11px;font-weight:600;color:hsl(var(--muted-foreground));margin-left:auto}
+  h1{font-size:24px;letter-spacing:-0.02em;margin:14px 0 4px;font-weight:660}
+  .lede{color:hsl(var(--muted-foreground));font-size:14px;margin:0 0 26px}
+  .filters{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:18px}
+  label{font-size:12px;color:hsl(var(--muted-foreground));font-weight:600;margin-right:6px}
+  select,input{font-family:inherit;font-size:13px;color:hsl(var(--foreground));background:hsl(var(--card));
+    border:1px solid hsl(var(--input));border-radius:calc(var(--radius) - 3px);padding:7px 10px;height:34px}
+  input{min-width:180px}
+  .count{margin-left:auto;font-size:12px;color:hsl(var(--muted-foreground))}
+  .card{background:hsl(var(--card));border:1px solid hsl(var(--border));border-radius:var(--radius);overflow:hidden}
+  table{width:100%;border-collapse:collapse}
+  th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:hsl(var(--muted-foreground));
+    font-weight:650;padding:11px 16px;border-bottom:1px solid hsl(var(--border));background:hsl(var(--muted)/.4)}
+  td{padding:12px 16px;border-bottom:1px solid hsl(var(--border));font-size:13.5px;vertical-align:middle}
+  tr.prompt{cursor:pointer}
+  tr.prompt:hover td{background:hsl(var(--muted)/.5)}
+  tr:last-child td{border-bottom:none}
+  .pname{font-family:var(--font-mono);font-weight:600;font-size:13px}
+  .pns{color:hsl(var(--muted-foreground));font-size:12px}
+  .chip{display:inline-flex;align-items:center;gap:5px;border:1px solid hsl(var(--border));border-radius:999px;
+    padding:2px 9px;font-size:11.5px;font-family:var(--font-mono);margin-right:6px}
+  .chip b{font-weight:700}
+  .chip .env{color:hsl(var(--muted-foreground))}
+  .gate{display:inline-flex;align-items:center;border-radius:999px;padding:2px 9px;font-size:11px;font-weight:650}
+  .gate.passed{color:hsl(var(--green));background:hsl(var(--green-bg))}
+  .gate.failed{color:hsl(var(--red));background:hsl(var(--red-bg))}
+  .gate.untested{color:hsl(var(--muted-foreground));background:hsl(var(--muted))}
+  .caret{display:inline-block;width:14px;color:hsl(var(--muted-foreground));transition:transform .15s}
+  tr.open .caret{transform:rotate(90deg)}
+  .detail td{background:hsl(var(--muted)/.35);padding:0}
+  .versions{padding:8px 16px 14px 40px}
+  .vrow{display:flex;align-items:center;gap:12px;padding:7px 0;border-bottom:1px dashed hsl(var(--border))}
+  .vrow:last-child{border-bottom:none}
+  .vnum{font-family:var(--font-mono);font-weight:700;font-size:12px;width:34px}
+  .vtmpl{font-size:12.5px;color:hsl(var(--foreground));flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .vwin{font-family:var(--font-mono);font-size:12px;color:hsl(var(--muted-foreground));width:64px;text-align:right}
+  .vdate{font-size:11.5px;color:hsl(var(--muted-foreground));width:96px;text-align:right}
+  .empty{padding:40px;text-align:center;color:hsl(var(--muted-foreground));font-size:13px}
+  footer{margin-top:22px;font-size:12px;color:hsl(var(--muted-foreground))}
+  code{font-family:var(--font-mono)}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="brand">
+      <span class="logo">@</span>
+      <span class="n">prompt-registry</span>
+      <span class="badge">live console · localhost:8080</span>
+    </div>
+    <h1>Prompt catalog</h1>
+    <p class="lede">Every prompt as a versioned artifact, grouped by <code>namespace.service</code>, with its
+      environment lanes and gate status. Filter by namespace or service; click a row for the version history.</p>
+
+    <div class="filters">
+      <div><label for="ns">Namespace</label><select id="ns"><option value="">All</option></select></div>
+      <div><label for="svc">Service</label><select id="svc"><option value="">All</option></select></div>
+      <input id="q" type="search" placeholder="Search name…" autocomplete="off">
+      <span class="count" id="count"></span>
+    </div>
+
+    <div class="card">
+      <table>
+        <thead><tr>
+          <th style="width:30px"></th><th>Prompt</th><th>Versions</th><th>Latest gate</th><th>Environments</th>
+        </tr></thead>
+        <tbody id="rows"><tr><td colspan="5" class="empty">Loading…</td></tr></tbody>
+      </table>
+    </div>
+
+    <footer>Reading the live API of this registry — <code>GET /prompts</code>, <code>/namespaces</code>,
+      <code>/prompts/{name}/versions</code>. Sample data from <code>make seed</code>.</footer>
+  </div>
+
+<script>
+const $ = s => document.querySelector(s);
+const rowsEl = $('#rows'), nsSel = $('#ns'), svcSel = $('#svc'), qEl = $('#q'), countEl = $('#count');
+let catalog = [], namespaces = [], expanded = new Set(), versionCache = {};
+
+const envOrder = { production: 0, staging: 1, dev: 2 };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+async function j(url){ const r = await fetch(url); if(!r.ok) throw new Error(url+' '+r.status); return r.json(); }
+
+async function init(){
+  try{
+    namespaces = await j('/namespaces');
+    for(const n of namespaces){ const o=document.createElement('option'); o.value=n.namespace; o.textContent=n.namespace; nsSel.appendChild(o); }
+  }catch(e){ rowsEl.innerHTML = `<tr><td colspan="5" class="empty">Could not reach the API. Is the registry up? (${esc(e.message)})</td></tr>`; return; }
+  await load();
+}
+
+function refreshServiceOptions(){
+  const ns = nsSel.value;
+  svcSel.innerHTML = '<option value="">All</option>';
+  const list = ns ? (namespaces.find(n=>n.namespace===ns)?.services||[]) : [...new Set(namespaces.flatMap(n=>n.services))].sort();
+  for(const s of list){ const o=document.createElement('option'); o.value=s; o.textContent=s; svcSel.appendChild(o); }
+}
+
+async function load(){
+  const p = new URLSearchParams();
+  if(nsSel.value) p.set('namespace', nsSel.value);
+  if(svcSel.value) p.set('service', svcSel.value);
+  catalog = await j('/prompts'+(p.toString()?'?'+p:''));
+  render();
+}
+
+function render(){
+  const q = qEl.value.trim().toLowerCase();
+  const list = catalog.filter(p => !q || p.name.toLowerCase().includes(q));
+  countEl.textContent = `${list.length} prompt${list.length===1?'':'s'}`;
+  if(!list.length){ rowsEl.innerHTML = '<tr><td colspan="5" class="empty">No prompts match these filters.</td></tr>'; return; }
+
+  rowsEl.innerHTML = '';
+  for(const p of list){
+    const aliases = [...p.aliases].sort((a,b)=>(envOrder[a.environment]??9)-(envOrder[b.environment]??9));
+    const chips = aliases.map(a=>`<span class="chip"><span class="env">${esc(a.environment)}</span> <b>v${a.version}</b></span>`).join('');
+    const open = expanded.has(p.name);
+    const tr = document.createElement('tr');
+    tr.className = 'prompt'+(open?' open':'');
+    tr.innerHTML = `
+      <td><span class="caret">▶</span></td>
+      <td><div class="pname">${esc(p.service)}</div><div class="pns">${esc(p.namespace)} · ${esc(p.name)}</div></td>
+      <td>${p.versionCount}</td>
+      <td><span class="gate ${esc(p.latestGate)}">${esc(p.latestGate)}</span></td>
+      <td>${chips}</td>`;
+    tr.onclick = () => toggle(p.name);
+    rowsEl.appendChild(tr);
+    if(open) rowsEl.appendChild(detailRow(p.name));
+  }
+}
+
+function detailRow(name){
+  const tr = document.createElement('tr'); tr.className='detail';
+  const td = document.createElement('td'); td.colSpan=5;
+  const box = document.createElement('div'); box.className='versions'; box.textContent='Loading versions…';
+  td.appendChild(box); tr.appendChild(td);
+  renderVersions(name, box);
+  return tr;
+}
+
+async function renderVersions(name, box){
+  try{
+    if(!versionCache[name]) versionCache[name] = await j('/prompts/'+encodeURIComponent(name)+'/versions');
+    const vs = versionCache[name];
+    box.innerHTML = vs.map(v=>{
+      const win = v.testResults && v.testResults.win_rate!=null ? (v.testResults.win_rate*100).toFixed(0)+'%' : '—';
+      const date = new Date(v.createdAt).toISOString().slice(0,10);
+      return `<div class="vrow">
+        <span class="vnum">v${v.version}</span>
+        <span class="gate ${esc(v.gateStatus)}">${esc(v.gateStatus)}</span>
+        <span class="vtmpl">${esc(v.template)}</span>
+        <span class="vwin">${win}</span>
+        <span class="vdate">${date}</span></div>`;
+    }).join('');
+  }catch(e){ box.textContent = 'Could not load versions: '+e.message; }
+}
+
+function toggle(name){ expanded.has(name) ? expanded.delete(name) : expanded.add(name); render(); }
+
+nsSel.onchange = async ()=>{ refreshServiceOptions(); await load(); };
+svcSel.onchange = load;
+qEl.oninput = render;
+init();
+</script>
+</body>
+</html>
