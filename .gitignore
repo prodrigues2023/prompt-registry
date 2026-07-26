@@ -21,6 +21,11 @@ venv/
 .DS_Store
 Thumbs.db
 
+# .NET
+bin/
+obj/
+*.user
+
 # Build / data
 dist/
 build/

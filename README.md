@@ -32,7 +32,7 @@ application already has.
 | UI prototype (design mockup) | Done | [▶ live demo](https://prodrigues2023.github.io/prompt-registry/prototype/) · [source](./docs/prototype) |
 | Architecture Decision Records | 5 published | [docs/adr](./docs/adr) |
 | Why prompts are code | Done | [docs/prompts-are-code.md](./docs/prompts-are-code.md) |
-| Registry implementation | Planned — Phase 3 | [ROADMAP.md](./ROADMAP.md) |
+| Registry (API, client, sample) | In progress — Phase 3 | [Run it locally](#run-it-locally) · [src](./src) |
 
 ## The idea
 
@@ -44,6 +44,32 @@ The registry is the thing that gives a prompt that identity.
 
 Everything in [the ADRs](./docs/adr) follows from treating a prompt as a versioned artifact
 rather than a string.
+
+## Run it locally
+
+One command brings up the registry and Postgres; migrations apply at startup.
+
+```bash
+make up        # build + start the registry on http://localhost:8080
+make demo      # publish, test, promote, block a regression, roll back — end to end
+make sample    # run an app that resolves prompt://checkout-summary@production live
+make down      # stop everything and drop the volume
+```
+
+`make demo` walks the whole lifecycle against the running registry and prints each step: a
+version is published and tested, promoted staging → production, a v2 whose golden-set test
+**fails is blocked at the gate** (HTTP 409), and a forced-then-bad promotion is **rolled back in
+one operation**. What the pieces are:
+
+| Project | Role |
+| --- | --- |
+| [`PromptRegistry.Core`](./src/PromptRegistry.Core) | The domain: immutable version, `prompt://name@env` reference, content hash |
+| [`PromptRegistry.Api`](./src/PromptRegistry.Api) | Append-only store, promote/rollback as an alias move, resolve endpoint |
+| [`PromptRegistry.Client`](./src/PromptRegistry.Client) | Resolve-by-alias with TTL cache, stale-serve, and bundled cold-start fallback |
+| [`SampleApp`](./samples/SampleApp) | An app that knows only the reference — never a version literal |
+
+The store is **append-only**: a published version is never mutated, so a rollback is a pointer
+move rather than a redeploy, and a test result stays attached to the exact bytes it graded.
 
 ## Why documented first
 

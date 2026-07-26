@@ -1,0 +1,27 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: registry
+      POSTGRES_PASSWORD: registry
+      POSTGRES_DB: registry
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U registry"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+  registry:
+    build:
+      context: .
+      dockerfile: src/PromptRegistry.Api/Dockerfile
+    environment:
+      PG_CONN: "Host=postgres;Port=5432;Username=registry;Password=registry;Database=registry"
+      MIGRATIONS_DIR: "/app/db/migrations"
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
