@@ -70,6 +70,8 @@ insert into aliases (name, environment, version) values
 insert into alias_history (name, environment, from_version, to_version, action, changed_at) values
  ('checkout.order-summary',   'production', null, 1, 'promote', now() - interval '28 days'),
  ('checkout.order-summary',   'production', 1,    2, 'promote', now() - interval '20 days'),
+ ('checkout.order-summary',   'production', 2,    3, 'promote', now() - interval '2 days 4 hours'),
+ ('checkout.order-summary',   'production', 3,    2, 'rollback', now() - interval '2 days 2 hours'),
  ('checkout.order-summary',   'staging',    null, 2, 'promote', now() - interval '18 days'),
  ('checkout.order-summary',   'staging',    2,    4, 'promote', now() - interval '6 days'),
  ('checkout.order-summary',   'dev',        null, 4, 'promote', now() - interval '5 days'),

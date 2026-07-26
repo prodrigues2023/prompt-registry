@@ -279,6 +279,25 @@ public sealed class PromptStore(NpgsqlDataSource db)
             aliases.TryGetValue(s.Name, out var a) ? a : new List<AliasView>())).ToList();
     }
 
+    /// <summary>The alias-move log for a prompt (promotions and rollbacks), newest first.</summary>
+    public async Task<IReadOnlyList<HistoryEvent>> HistoryEventsAsync(string name)
+    {
+        await using var conn = await db.OpenConnectionAsync();
+        await using var cmd = new NpgsqlCommand(
+            """
+            select environment, from_version, to_version, action, changed_at
+            from alias_history where name = @name order by changed_at desc
+            """, conn);
+        cmd.Parameters.AddWithValue("name", name);
+        await using var r = await cmd.ExecuteReaderAsync();
+        var events = new List<HistoryEvent>();
+        while (await r.ReadAsync())
+            events.Add(new HistoryEvent(
+                r.GetString(0), r.IsDBNull(1) ? null : r.GetInt32(1), r.GetInt32(2),
+                r.GetString(3), r.GetFieldValue<DateTime>(4)));
+        return events;
+    }
+
     /// <summary>The distinct namespaces and the services under each — the filter's option list.</summary>
     public async Task<IReadOnlyList<NamespaceView>> NamespacesAsync()
     {
@@ -322,3 +341,5 @@ public sealed record PromptSummary(
     IReadOnlyList<AliasView> Aliases);
 
 public sealed record NamespaceView(string Namespace, IReadOnlyList<string> Services);
+
+public sealed record HistoryEvent(string Environment, int? FromVersion, int ToVersion, string Action, DateTime ChangedAt);

@@ -55,6 +55,9 @@ app.MapPost("/prompts/{name}/versions/{version:int}/test",
 app.MapGet("/prompts/{name}/aliases", async (string name, PromptStore store) =>
     Results.Ok((await store.AliasesAsync(name)).Select(a => new { environment = a.Environment, version = a.Version })));
 
+app.MapGet("/prompts/{name}/history", async (string name, PromptStore store) =>
+    Results.Ok(await store.HistoryEventsAsync(name)));
+
 // --- Environment aliases (the only mutable pointer) ---------------------------------------
 
 app.MapPut("/environments/{env}/prompts/{name}",
