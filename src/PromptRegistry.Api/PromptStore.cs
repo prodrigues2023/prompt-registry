@@ -225,6 +225,81 @@ public sealed class PromptStore(NpgsqlDataSource db)
         return new ResolvedPrompt(name, env, version, template, variables, hash);
     }
 
+    /// <summary>
+    /// The catalog view: every prompt with its namespace and service (derived from the
+    /// <c>namespace.service</c> name), its latest version and gate, and its environment aliases.
+    /// Optional namespace/service filters power the console's filtering.
+    /// </summary>
+    public async Task<IReadOnlyList<PromptSummary>> ListPromptsAsync(string? ns, string? service)
+    {
+        await using var conn = await db.OpenConnectionAsync();
+
+        var summaries = new List<(string Name, string Ns, string Svc, int Latest, int Count, string Gate)>();
+        await using (var cmd = new NpgsqlCommand(
+            """
+            select v.name,
+                   split_part(v.name, '.', 1)                          as namespace,
+                   split_part(v.name, '.', 2)                          as service,
+                   max(v.version)                                      as latest_version,
+                   count(*)                                            as version_count,
+                   (array_agg(v.gate_status order by v.version desc))[1] as latest_gate
+            from prompt_versions v
+            where (@ns = ''  or split_part(v.name, '.', 1) = @ns)
+              and (@svc = '' or split_part(v.name, '.', 2) = @svc)
+            group by v.name
+            order by v.name
+            """, conn))
+        {
+            cmd.Parameters.AddWithValue("ns", (object?)ns ?? "");
+            cmd.Parameters.AddWithValue("svc", (object?)service ?? "");
+            await using var r = await cmd.ExecuteReaderAsync();
+            while (await r.ReadAsync())
+                summaries.Add((r.GetString(0), r.GetString(1), r.GetString(2),
+                    r.GetInt32(3), (int)r.GetInt64(4), r.GetString(5)));
+        }
+
+        if (summaries.Count == 0) return Array.Empty<PromptSummary>();
+
+        var aliases = new Dictionary<string, List<AliasView>>();
+        await using (var cmd = new NpgsqlCommand(
+            "select name, environment, version from aliases where name = any(@names) order by environment", conn))
+        {
+            cmd.Parameters.Add(new NpgsqlParameter("names", summaries.Select(s => s.Name).ToArray()));
+            await using var r = await cmd.ExecuteReaderAsync();
+            while (await r.ReadAsync())
+            {
+                var n = r.GetString(0);
+                if (!aliases.TryGetValue(n, out var list)) aliases[n] = list = new List<AliasView>();
+                list.Add(new AliasView(r.GetString(1), r.GetInt32(2)));
+            }
+        }
+
+        return summaries.Select(s => new PromptSummary(
+            s.Name, s.Ns, s.Svc, s.Latest, s.Count, s.Gate,
+            aliases.TryGetValue(s.Name, out var a) ? a : new List<AliasView>())).ToList();
+    }
+
+    /// <summary>The distinct namespaces and the services under each — the filter's option list.</summary>
+    public async Task<IReadOnlyList<NamespaceView>> NamespacesAsync()
+    {
+        await using var conn = await db.OpenConnectionAsync();
+        await using var cmd = new NpgsqlCommand(
+            """
+            select split_part(name, '.', 1) as namespace, split_part(name, '.', 2) as service
+            from prompt_versions group by 1, 2 order by 1, 2
+            """, conn);
+        await using var r = await cmd.ExecuteReaderAsync();
+        var grouped = new Dictionary<string, List<string>>();
+        while (await r.ReadAsync())
+        {
+            var ns = r.GetString(0);
+            if (!grouped.TryGetValue(ns, out var svcs)) grouped[ns] = svcs = new List<string>();
+            var svc = r.GetString(1);
+            if (!string.IsNullOrEmpty(svc)) svcs.Add(svc);
+        }
+        return grouped.Select(kv => new NamespaceView(kv.Key, kv.Value)).ToList();
+    }
+
     private const string SelectVersion =
         "select name, version, template, variables::text, metadata::text, content_hash, gate_status, test_results::text, created_at from prompt_versions";
 
@@ -238,3 +313,12 @@ public sealed class PromptStore(NpgsqlDataSource db)
             r.GetString(5), r.GetString(6), testResults, r.GetFieldValue<DateTime>(8));
     }
 }
+
+public sealed record AliasView(string Environment, int Version);
+
+public sealed record PromptSummary(
+    string Name, string Namespace, string Service,
+    int LatestVersion, int VersionCount, string LatestGate,
+    IReadOnlyList<AliasView> Aliases);
+
+public sealed record NamespaceView(string Namespace, IReadOnlyList<string> Services);

@@ -48,6 +48,12 @@
   .lnk{display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 14px;border-radius:calc(var(--radius) - 2px);
     border:1px solid hsl(var(--border));color:hsl(var(--foreground));text-decoration:none;font-size:13px;font-weight:500}
   .lnk:hover{background:hsl(var(--muted))}
+  pre{background:hsl(var(--muted));border:1px solid hsl(var(--border));border-radius:calc(var(--radius) - 2px);
+    padding:14px 16px;overflow-x:auto;font-family:var(--font-mono);font-size:12.5px;line-height:1.75;margin:0}
+  pre .c{color:hsl(var(--muted-foreground))}
+  .tag{display:inline-flex;align-items:center;border-radius:999px;background:hsl(var(--muted));
+    padding:3px 10px;font-size:11px;font-weight:600;color:hsl(var(--foreground));margin:0 6px 6px 0;
+    font-family:var(--font-mono)}
   footer{color:hsl(var(--muted-foreground));font-size:12px;margin-top:30px;border-top:1px solid hsl(var(--border));padding-top:16px}
   a.plain{color:hsl(var(--brand));text-decoration:none;font-weight:500}
 </style>
@@ -57,11 +63,28 @@
     <div class="brand">
       <span class="logo">@</span>
       <span class="n">prompt-registry</span>
-      <span class="badge">docs-first</span>
+      <span class="badge">docs-first · now runnable</span>
     </div>
     <h1>A prompt is code — version it, test it, promote it, roll it back.</h1>
     <p class="lede">A registry that treats a prompt as a versioned, immutable artifact with an identity,
-      a test, a promotion path, and a rollback. A reference architecture, documented first.</p>
+      a test, a promotion path, and a rollback. Documented first — and now runnable end to end,
+      from one command.</p>
+
+    <div class="card">
+      <div class="k">New — it runs</div>
+      <h2>Clone it and bring the whole thing up</h2>
+      <p>The registry, a Postgres store, the golden-set regression gate, and the client library —
+        running locally, no cloud account. Milestones 1–4 are complete.</p>
+      <pre><span class="c"># registry + Postgres on :8080, migrations applied</span>
+make up
+<span class="c"># sample data — 2 namespaces, 2 services each</span>
+make seed
+<span class="c"># the golden-set gate catches a regression and blocks the promotion</span>
+make regression</pre>
+      <div style="margin:16px 0 2px">
+        <span class="tag">immutable versions</span><span class="tag">promote / rollback</span><span class="tag">golden-set gate</span><span class="tag">namespace filters</span>
+      </div>
+    </div>
 
     <div class="card">
       <div class="k">Interactive prototype</div>
@@ -73,6 +96,7 @@
 
     <div class="links">
       <a class="lnk" href="https://github.com/prodrigues2023/prompt-registry">View on GitHub</a>
+      <a class="lnk" href="https://github.com/prodrigues2023/prompt-registry/tree/main/src">Source code</a>
       <a class="lnk" href="https://github.com/prodrigues2023/prompt-registry/tree/main/docs/adr">Architecture decisions</a>
       <a class="lnk" href="https://github.com/prodrigues2023/prompt-registry/blob/main/ROADMAP.md">Roadmap</a>
     </div>

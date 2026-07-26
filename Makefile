@@ -1,6 +1,6 @@
 # Prompt Registry — local environment. One command each.
 
-.PHONY: up down logs demo regression drills rollback-drill fleet-drill fallback-drill app build test
+.PHONY: up down logs seed demo regression drills rollback-drill fleet-drill fallback-drill app build test
 
 ## up: build and start the registry + Postgres, wait until healthy
 up:
@@ -19,6 +19,11 @@ down:
 ## logs: tail the registry logs
 logs:
 	docker compose logs -f registry
+
+## seed: load development sample data (2 namespaces, 2 services each) into the running registry
+seed:
+	docker compose exec -T postgres sh -c 'psql -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"' < db/seed/dev_seed.sql
+	@echo "seeded. try: curl 'http://localhost:8080/prompts?namespace=checkout'"
 
 ## demo: run the full lifecycle — publish, test, promote, blocked regression, rollback
 demo:

@@ -20,6 +20,14 @@ if (Directory.Exists(migrationsDir))
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
+// --- Catalog (list + filter by namespace/service) -----------------------------------------
+
+app.MapGet("/prompts", async (string? @namespace, string? service, PromptStore store) =>
+    Results.Ok(await store.ListPromptsAsync(@namespace, service)));
+
+app.MapGet("/namespaces", async (PromptStore store) =>
+    Results.Ok(await store.NamespacesAsync()));
+
 // --- Versions (append-only) ---------------------------------------------------------------
 
 app.MapPost("/prompts/{name}/versions", async (string name, PublishRequest req, PromptStore store) =>
