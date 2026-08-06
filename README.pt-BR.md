@@ -29,15 +29,28 @@ aplicação já tem.
 | --- | --- | --- |
 | Contexto e escopo | Pronto | [docs/context.md](./docs/context.md) |
 | Diagramas de ciclo de vida | Pronto | [docs/diagrams](./docs/diagrams) |
-| Console ao vivo (dashboard) | Pronto | servido em `/` |
+| Protótipo de UI (mockup de design) | Pronto | [▶ demo ao vivo](https://prodrigues2023.github.io/prompt-registry/prototype/) · [fonte](./docs/prototype) |
+| Console ao vivo (dashboard) | Pronto | [O console](#o-console) · servido em `/` |
 | Registros de Decisão de Arquitetura | 7 publicados | [docs/adr](./docs/adr) |
 | Por que prompts são código | Pronto | [docs/prompts-are-code.md](./docs/prompts-are-code.md) |
 | Contratos — schema do artefato, formato de referência, contrato de teste | Pronto, escrito após M3/M4 | [docs/contracts](./docs/contracts) |
-| Implementação do registry (API, client, consumer) | Pronto — Fase 3 | [src](./src) |
-| Harness de regressão (golden set → gate) | Pronto — Fase 4 | [src/PromptRegistry.Harness](./src/PromptRegistry.Harness) |
+| Registry (API, client, consumer) | Pronto — Fase 3 | [Rodando localmente](#rodando-localmente) · [src](./src) |
+| Harness de regressão (golden set → gate) | Pronto — Fase 4 | [O gate](#testando-uma-mudança-de-prompt--o-gate) · [src](./src/PromptRegistry.Harness) |
 
-> A versão em português deste README está resumida — o [README.md](./README.md) em inglês tem as
-> seções completas do console, do gate de regressão e dos drills de validação, com screenshots.
+## O console
+
+O registry serve um dashboard ao vivo em `http://localhost:8080/` — escolha um prompt para ver sua
+faixa de release, o histórico de versões, e qual versão cada ambiente resolve. Promover e reverter
+chamam a API. Abaixo: `checkout.order-summary` depois que um `v3` ruim foi revertido para o `v2`
+imutável.
+
+![O console do Prompt Registry — KPIs, uma faixa de release com um arco de rollback, histórico de versões, e resolução de alias](./docs/images/console-dashboard.png)
+
+Promover e reverter são uma única operação e têm efeito sem redeploy — aqui o `v4` é promovido para
+produção, depois revertido para o `v1` imutável, e a faixa de release, os KPIs, e a resolução de
+alias acompanham tudo:
+
+![Promovendo uma versão para produção e revertendo, ao vivo no console](./docs/images/console-promote-rollback.gif)
 
 ## A ideia
 
@@ -48,6 +61,87 @@ para a versão anterior em segundos sem tocar na aplicação. O registry é o qu
 identidade.
 
 Tudo [nos ADRs](./docs/adr) decorre de tratar um prompt como artefato versionado em vez de string.
+
+## Rodando localmente
+
+Um comando sobe o registry e o Postgres; as migrations aplicam na inicialização.
+
+```bash
+make up         # build + inicia o registry em http://localhost:8080
+make demo       # publica, testa, promove, bloqueia uma regressão, reverte — de ponta a ponta
+make regression # roda o harness de golden set: uma regressão pega bloqueia uma promoção
+make drills     # drills de consistência de frota + fallback (autocontidos, sem servidor)
+make app        # roda o consumer de exemplo que resolve prompt://checkout-summary@production ao vivo
+make down       # para tudo e derruba o volume
+```
+
+`make demo` percorre todo o ciclo de vida contra o registry rodando e imprime cada passo: uma
+versão é publicada e testada, promovida de staging → produção, um v2 cujo teste de golden set
+**falha é bloqueado no gate** (HTTP 409), e uma promoção forçada-e-ruim é **revertida em uma única
+operação**. As peças:
+
+| Projeto | Papel |
+| --- | --- |
+| [`PromptRegistry.Core`](./src/PromptRegistry.Core) | O domínio: versão imutável, referência `prompt://name@env`, hash de conteúdo |
+| [`PromptRegistry.Api`](./src/PromptRegistry.Api) | Store append-only, promote/rollback como movimento de alias, endpoint de resolução |
+| [`PromptRegistry.Client`](./src/PromptRegistry.Client) | Resolve-by-alias com cache TTL, serve-stale, e fallback de cold-start empacotado |
+| [`PromptRegistry.Harness`](./src/PromptRegistry.Harness) | `promptcheck`: roda o golden set, compara com o baseline por slice, escreve o gate |
+| [`PromptRegistry.Drills`](./src/PromptRegistry.Drills) | `drills`: os drills de validação autoafirmativos — tempo de rollback, consistência de frota, fallback |
+| [`CheckoutSummarizer`](./samples/CheckoutSummarizer) | Um consumer de exemplo que conhece só a referência — nunca um literal de versão |
+
+O store é **append-only**: uma versão publicada nunca é mutada, então um rollback é um movimento de
+ponteiro em vez de um redeploy, e um resultado de teste fica atado exatamente aos bytes que ele
+avaliou.
+
+## Testando uma mudança de prompt — o gate
+
+`make regression` roda o harness que decide uma promoção para que um spot-check humano não precise.
+Ele materializa a [ADR-0004](./docs/adr/0004-regression-testing.md): o teste é **comparativo** (a
+candidata é pelo menos tão boa quanto a versão que substituiria?), pontuado por **propriedades**,
+não saída exata, avaliado **por slice** para que uma mudança que degrade uma classe de entradas
+falhe, e rodado várias vezes por caso porque o modelo é não-determinístico.
+
+```bash
+promptcheck --prompt checkout-summary --candidate 2 \
+            --golden samples/golden/checkout-summary.golden.json --gate
+```
+
+Uma reescrita que "lê melhor, mas silenciosamente derruba o número do pedido e o total" é
+exatamente a mudança que um spot-check deixa passar. O harness pega:
+
+```
+slice              candidate    baseline     delta   verdict
+completeness            0.0%      100.0%   -100.0%   REGRESSED
+edge                  100.0%      100.0%     +0.0%   ok
+typical               100.0%      100.0%     +0.0%   ok
+FAIL: Regression on slice(s) completeness ...
+```
+
+Com `--gate` o veredito é escrito de volta na versão, e um gate que falha **bloqueia a
+promoção** — a regressão nunca chega em produção. A avaliação roda contra um **modelo stub
+local** (sem conta de nuvem, pela restrição de "roda no laptop"); a metodologia, não o stub, é o
+ponto. *Como* pontuar uma versão como melhor que outra é do
+[rag-evaluation-toolkit](https://github.com/prodrigues2023/rag-evaluation-toolkit) — este registry
+**executa** esse julgamento como um gate.
+
+## Drills de validação
+
+Três drills provam as promessas que o registry faz sobre falha e recuperação, cada um
+autoafirmativo, então funcionam como testes também — *mostrado, não afirmado*:
+
+| Drill | O que prova | Rodar |
+| --- | --- | --- |
+| **Rollback** | Um rollback chega a um consumer rodando dentro do TTL do cache — segundos, sem redeploy | `make rollback-drill` (precisa de `make up`) |
+| **Consistência de frota** | Duas instâncias discordam brevemente durante um refresh, depois convergem — a consistência é eventual, limitada pelo TTL | `make fleet-drill` |
+| **Fallback** | Uma indisponibilidade do registry degrada para a versão empacotada (cold start) ou a última-boa-conhecida (warm), nunca uma falha dura | `make fallback-drill` |
+
+Os drills de frota e fallback são autocontidos (um registry falso em processo, sem servidor); o
+drill de rollback mede a propagação real contra um registry rodando. Saída de exemplo:
+
+```
+rollback issued -> consumer served v1 again after 1011 ms
+bounded by the 1s consumer cache TTL — no application redeploy, no restart.
+```
 
 ## Por que documentar primeiro
 
