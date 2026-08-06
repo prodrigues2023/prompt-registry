@@ -32,16 +32,22 @@ capability is traced to immutability.
 
 **Goal:** the registry's formats are specified, so applications integrate consistently.
 
-| Issue | Deliverable |
-| --- | --- |
-| Prompt artifact schema | Name, version, template, variables, metadata, test results |
-| Reference format | How an application names a prompt and an environment alias |
-| ADR-0006 | Prompt artifact and reference format |
-| ADR-0007 | Access control and change approval |
-| Test contract | How a golden set and its assertions attach to a prompt |
+| Issue | Deliverable | Status |
+| --- | --- | --- |
+| Prompt artifact schema | Name, version, template, variables, metadata, test results | Done — [prompt-artifact-schema.md](./docs/contracts/prompt-artifact-schema.md) |
+| Reference format | How an application names a prompt and an environment alias | Done — [reference-format.md](./docs/contracts/reference-format.md) |
+| ADR-0006 | Prompt artifact and reference format | Done — [0006](./docs/adr/0006-prompt-artifact-and-reference-format.md) |
+| ADR-0007 | Access control and change approval | Done — [0007](./docs/adr/0007-access-control-and-change-approval.md) |
+| Test contract | How a golden set and its assertions attach to a prompt | Done — [test-contract.md](./docs/contracts/test-contract.md) |
 
-**Exit criteria:** an application and the registry could be built independently against the
-contracts and interoperate.
+**Exit criteria met, out of sequence.** This milestone was written up *after* Milestones 3 and 4
+had already shipped — the registry, client, sample app, regression harness, and validation drills
+were built first, and this documents the contracts as they actually turned out, not as a fresh
+design. [ADR-0006](./docs/adr/0006-prompt-artifact-and-reference-format.md) records that sequencing
+gap plainly rather than hiding it, and both it and
+[ADR-0007](./docs/adr/0007-access-control-and-change-approval.md) disclose specific places where
+the built system is narrower than the earlier ADRs promised — see
+[docs/contracts/README.md](./docs/contracts/README.md#whats-honestly-disclosed-as-incomplete).
 
 ---
 

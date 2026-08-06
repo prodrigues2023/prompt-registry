@@ -10,8 +10,8 @@ See [ADR-0001](./0001-record-architecture-decisions.md) for the process itself.
 | [0003](./0003-promotion.md) | Promotion through environments | Accepted |
 | [0004](./0004-regression-testing.md) | Regression testing a prompt change | Accepted |
 | [0005](./0005-referencing-and-rollback.md) | Referencing and rollback | Accepted |
-| 0006 | Prompt artifact and reference format | Planned — Milestone 2 |
-| 0007 | Access control and change approval | Planned — Milestone 2 |
+| [0006](./0006-prompt-artifact-and-reference-format.md) | Prompt artifact and reference format | Accepted |
+| [0007](./0007-access-control-and-change-approval.md) | Access control and change approval | Accepted |
 
 ## How the accepted decisions fit together
 
@@ -28,6 +28,14 @@ Version → test → promote → reference/rollback. It is `git` plus CI/CD plus
 one artifact that usually gets none of them. The load-bearing decision is **0002**: immutability is
 what makes testing comparative, promotion safe, and rollback possible — remove it and there is no
 stable thing to test against, promote, or return to.
+
+**0006** and **0007** are a different kind of ADR: written after Milestones 3 and 4 already shipped,
+documenting the artifact/reference contracts and the access-control boundary as actually built,
+rather than designing either fresh. 0006 records where the implementation is narrower than 0002 and
+0005 promised (no real authorship field, no compatibility-declaration mechanism); 0007 records that
+access control and change approval simply do not exist in this codebase. Neither closes a gap —
+both make the gap visible instead of implicit. See
+[docs/contracts/README.md](../contracts/README.md#whats-honestly-disclosed-as-incomplete).
 
 ## Template
 

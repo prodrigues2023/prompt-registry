@@ -4,8 +4,8 @@
 > código. Um registry que trata um prompt como artefato de primeira classe, não como uma string num
 > arquivo de código. Documentado primeiro, implementado em público.
 
-[![Fase](https://img.shields.io/badge/fase-1%20design-blue)](./ROADMAP.md)
-[![ADRs](https://img.shields.io/badge/ADRs-5-green)](./docs/adr)
+[![Fase](https://img.shields.io/badge/fase-4%20valida%C3%A7%C3%A3o-blue)](./ROADMAP.md)
+[![ADRs](https://img.shields.io/badge/ADRs-7-green)](./docs/adr)
 [![Licença](https://img.shields.io/badge/licen%C3%A7a-MIT-lightgrey)](./LICENSE)
 
 Um prompt é a linha que mais muda o comportamento de uma aplicação de IA, e costuma ser a menos
@@ -29,9 +29,15 @@ aplicação já tem.
 | --- | --- | --- |
 | Contexto e escopo | Pronto | [docs/context.md](./docs/context.md) |
 | Diagramas de ciclo de vida | Pronto | [docs/diagrams](./docs/diagrams) |
-| Registros de Decisão de Arquitetura | 5 publicados | [docs/adr](./docs/adr) |
+| Console ao vivo (dashboard) | Pronto | servido em `/` |
+| Registros de Decisão de Arquitetura | 7 publicados | [docs/adr](./docs/adr) |
 | Por que prompts são código | Pronto | [docs/prompts-are-code.md](./docs/prompts-are-code.md) |
-| Implementação do registry | Planejada — Fase 3 | [ROADMAP.md](./ROADMAP.md) |
+| Contratos — schema do artefato, formato de referência, contrato de teste | Pronto, escrito após M3/M4 | [docs/contracts](./docs/contracts) |
+| Implementação do registry (API, client, consumer) | Pronto — Fase 3 | [src](./src) |
+| Harness de regressão (golden set → gate) | Pronto — Fase 4 | [src/PromptRegistry.Harness](./src/PromptRegistry.Harness) |
+
+> A versão em português deste README está resumida — o [README.md](./README.md) em inglês tem as
+> seções completas do console, do gate de regressão e dos drills de validação, com screenshots.
 
 ## A ideia
 
@@ -59,10 +65,12 @@ raciocinar no papel do que de retrofitar.
 
 Quatro fases, acompanhadas como milestones no GitHub. Detalhes em [ROADMAP.md](./ROADMAP.md).
 
-1. **Design** — contexto, diagramas de ciclo de vida, ADRs, o argumento de que prompts são código
-2. **Contratos** — o artefato de prompt, o formato de referência, o contrato de teste
-3. **Registry** — o store, o fluxo de promoção, uma integração de exemplo
-4. **Validação** — testes de regressão contra um golden set, drills de rollback
+1. **Design** — contexto, diagramas de ciclo de vida, ADRs, o argumento de que prompts são código — concluído
+2. **Contratos** — o artefato de prompt, o formato de referência, o contrato de teste — concluído,
+   escrito após os Milestones 3 e 4 já estarem prontos; veja
+   [ADR-0006](./docs/adr/0006-prompt-artifact-and-reference-format.md) para o porquê
+3. **Registry** — o store, o fluxo de promoção, uma integração de exemplo — concluído
+4. **Validação** — testes de regressão contra um golden set, drills de rollback — concluído
 
 ## Relacionados
 

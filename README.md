@@ -4,8 +4,8 @@
 > them back like code. A registry that treats a prompt as a first-class artifact, not a string in
 > a source file. Documented first, implemented in the open.
 
-[![Phase](https://img.shields.io/badge/phase-1%20design-blue)](./ROADMAP.md)
-[![ADRs](https://img.shields.io/badge/ADRs-5-green)](./docs/adr)
+[![Phase](https://img.shields.io/badge/phase-4%20validation-blue)](./ROADMAP.md)
+[![ADRs](https://img.shields.io/badge/ADRs-7-green)](./docs/adr)
 [![License](https://img.shields.io/badge/license-MIT-lightgrey)](./LICENSE)
 
 A prompt is the single most behaviour-changing line in an AI application, and it is usually the
@@ -31,8 +31,9 @@ application already has.
 | Lifecycle diagrams | Done | [docs/diagrams](./docs/diagrams) |
 | UI prototype (design mockup) | Done | [▶ live demo](https://prodrigues2023.github.io/prompt-registry/prototype/) · [source](./docs/prototype) |
 | Live console (dashboard) | Done | [The console](#the-console) · served at `/` |
-| Architecture Decision Records | 5 published | [docs/adr](./docs/adr) |
+| Architecture Decision Records | 7 published | [docs/adr](./docs/adr) |
 | Why prompts are code | Done | [docs/prompts-are-code.md](./docs/prompts-are-code.md) |
+| Contracts — artifact schema, reference format, test contract | Done, written up after M3/M4 shipped | [docs/contracts](./docs/contracts) |
 | Registry (API, client, consumer) | Done — Phase 3 | [Run it locally](#run-it-locally) · [src](./src) |
 | Regression harness (golden set → gate) | Done — Phase 4 | [The gate](#testing-a-prompt-change--the-gate) · [src](./src/PromptRegistry.Harness) |
 
@@ -154,10 +155,12 @@ is far cheaper to reason through on paper than to retrofit.
 
 Four phases, tracked as GitHub milestones. See [ROADMAP.md](./ROADMAP.md).
 
-1. **Design** — context, lifecycle diagrams, ADRs, the prompts-are-code argument
-2. **Contracts** — the prompt artifact, the reference format, the test contract
-3. **Registry** — the store, the promotion flow, a sample integration
-4. **Validation** — regression testing against a golden set, rollback drills
+1. **Design** — context, lifecycle diagrams, ADRs, the prompts-are-code argument — done
+2. **Contracts** — the prompt artifact, the reference format, the test contract — done, written up
+   after Milestones 3 and 4 shipped; see [ADR-0006](./docs/adr/0006-prompt-artifact-and-reference-format.md)
+   for why, and [docs/contracts](./docs/contracts) for what it disclosed
+3. **Registry** — the store, the promotion flow, a sample integration — done
+4. **Validation** — regression testing against a golden set, rollback drills — done
 
 ## Related
 
